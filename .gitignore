@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Dataset files
+*.xlsx
+*.csv
+
+# ML artifacts
+*.pkl.tmp
+
+# Node
+node_modules/
+build/
+dist/
+
+# Env
+.env
+
+# VS Code
+.vscode/
