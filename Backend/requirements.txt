@@ -3,7 +3,7 @@ uvicorn
 pydantic
 numpy
 pandas
-scikit-learn
+scikit-learn==1.0.2
 fastapi-cors
 pickle
 starlette
