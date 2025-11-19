@@ -36,7 +36,7 @@ import {
 import axios from "axios";
 
 const canonicalCols = [
-  "Client Revenue(in GBP (Billion))",
+  "Client Revenue",
   "Number of Users",
   "RICEFW",
   "Duration (Months)",
