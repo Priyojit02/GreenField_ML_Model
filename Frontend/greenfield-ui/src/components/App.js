@@ -146,7 +146,7 @@ function App() {
           }}
         >
           <Typography variant="h5" gutterBottom>
-            Input Known Values
+            Effort Estimator
           </Typography>
           <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
             Input following Values of fields for Effort estimation.
@@ -154,7 +154,7 @@ function App() {
           </Typography>
 
           <Grid container spacing={2}>
-            {canonicalCols.map((col) => (
+            {canonicalCols.map((col-1) => (
               <Grid item xs={12} sm={6} md={4} key={col}>
                 <TextField
                   label={col}
