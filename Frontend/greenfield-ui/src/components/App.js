@@ -79,7 +79,7 @@ function App() {
     setErrorMsg("");
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:8000/predict", {
+      const res = await axios.post("https://greenfield-ml-model-1b.onrender.com/predict", {
         inputs,
       });
       setResults(res.data);
