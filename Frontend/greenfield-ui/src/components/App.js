@@ -64,6 +64,8 @@ function App() {
   const resultsRef = useRef(null);
 
   const handleChange = (col, val) => {
+    setResults(null);
+    setErrorMsg("");
     if (val === "") {
       const copy = { ...inputs };
       delete copy[col];
