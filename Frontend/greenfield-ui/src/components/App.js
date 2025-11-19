@@ -154,7 +154,9 @@ function App() {
           </Typography>
 
           <Grid container spacing={2}>
-            {canonicalCols.map((col-1) => (
+            {canonicalCols
+              .filter(col=>col !== "Estimated Effort (man days)")
+              .map((col) => (
               <Grid item xs={12} sm={6} md={4} key={col}>
                 <TextField
                   label={col}
