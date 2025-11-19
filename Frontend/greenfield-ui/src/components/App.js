@@ -400,7 +400,10 @@
 // export default App;
 
 //new code 
-// Updated App.js with requested changes
+// src/App.js
+
+// src/App.js
+
 import React, { useState, useRef, useEffect } from "react";
 import {
   Container,
@@ -438,13 +441,15 @@ const canonicalCols = [
 ];
 
 const formatNumber = (val) => {
-  if (val === null || val === undefined || isNaN(Number(val))) return "-";
+  if (val === null || val === undefined || isNaN(Number(val))) {
+    return "-";
+  }
   return Math.round(Number(val)).toLocaleString("en-IN");
 };
 
 function App() {
   const [inputs, setInputs] = useState({});
-  const [useModel, setUseModel] = useState({}); // checkbox state
+  const [useModel, setUseModel] = useState({});
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -472,15 +477,15 @@ function App() {
     try {
       setLoading(true);
 
-      // Apply rule: if user didn't give value and did NOT check box → treat as 1
       let finalInputs = {};
+
       canonicalCols.forEach((col) => {
-        if (inputs[col] !== undefined) {
+        if (inputs[col] !== undefined && inputs[col] !== "") {
           finalInputs[col] = inputs[col];
         } else if (useModel[col]) {
-          finalInputs[col] = null; // let model estimate
+          finalInputs[col] = null;
         } else {
-          finalInputs[col] = 1; // user didn't fill + didn't check → default 1
+          finalInputs[col] = 1;
         }
       });
 
@@ -491,7 +496,8 @@ function App() {
 
       setResults(res.data);
     } catch (err) {
-      setErrorMsg("Unable to reach the effort estimation service.");
+      console.error("Prediction error:", err);
+      setErrorMsg("Unable to contact the prediction service.");
     } finally {
       setLoading(false);
     }
@@ -506,7 +512,10 @@ function App() {
 
   useEffect(() => {
     if (results && resultsRef.current) {
-      resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      resultsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
   }, [results]);
 
@@ -519,7 +528,13 @@ function App() {
     results?.predictions?.["Estimated Effort (man days)"] ?? null;
 
   return (
-    <Box sx={{ flexGrow: 1, background: "#ffffff", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        background: "linear-gradient(to right, #ece9e6, #ffffff)",
+        minHeight: "100vh",
+      }}
+    >
       <AppBar position="static" sx={{ backgroundColor: "#1976d2" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -533,18 +548,24 @@ function App() {
           <Typography variant="h5" gutterBottom>
             Effort Estimator
           </Typography>
+          <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+            Enter any known values. Leave blank or tick the box to estimate.
+          </Typography>
 
           <Grid container spacing={2}>
             {canonicalCols.map((col) => (
-              <Grid item xs={12} sm={6} key={col}>
+              <Grid item xs={12} sm={6} md={4} key={col}>
                 <TextField
                   label={col}
                   variant="outlined"
                   fullWidth
                   type="number"
+                  inputProps={{ min: 0 }}
                   value={inputs[col] ?? ""}
                   onChange={(e) => handleChange(col, e.target.value)}
+                  size={isSmall ? "small" : "medium"}
                 />
+
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -558,60 +579,166 @@ function App() {
             ))}
           </Grid>
 
-          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              mt: 3,
+              display: "flex",
+              flexDirection: isSmall ? "column" : "row",
+              gap: 2,
+              alignItems: isSmall ? "stretch" : "center",
+            }}
+          >
             <Button
               variant="contained"
               onClick={handleEstimate}
               disabled={loading}
-              sx={{ backgroundColor: "#4caf50", fontWeight: "bold" }}
+              sx={{
+                backgroundColor: "#4caf50",
+                fontWeight: "bold",
+              }}
             >
               {loading ? "Estimating..." : "Estimate Effort"}
             </Button>
 
-            <Button variant="outlined" onClick={handleReset} disabled={loading}>
+            <Button variant="outlined" color="inherit" onClick={handleReset}>
               Clear
             </Button>
           </Box>
 
           {errorMsg && (
-            <Typography color="error" sx={{ mt: 2 }}>
+            <Typography variant="body2" color="error" sx={{ mt: 2 }}>
               {errorMsg}
             </Typography>
           )}
         </Paper>
 
-        {/* Results Section */}
+        {/* RESULTS */}
         <div ref={resultsRef}>
           <Collapse in={Boolean(results)} timeout={500}>
             {results && (
               <>
-                <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+                {/* CARDS */}
+                <Paper
+                  elevation={2}
+                  sx={{ p: isSmall ? 2 : 3, mb: 4, borderRadius: 3 }}
+                >
                   <Typography variant="h5" sx={{ mb: 2 }}>
                     Estimated Results
                   </Typography>
 
                   <Grid container spacing={3}>
                     {Object.entries(results.predictions || {}).map(
-                      ([field, val]) => (
-                        <Grid item xs={12} sm={6} key={field}>
-                          <Card sx={{ boxShadow: 2, borderRadius: 3 }}>
-                            <CardContent>
-                              <Typography variant="subtitle2" color="textSecondary">
-                                {field}
-                              </Typography>
-                              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1976d2" }}>
-                                {formatNumber(val)}
-                              </Typography>
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                      )
+                      ([field, val]) => {
+                        const providedByUser =
+                          inputs[field] !== undefined &&
+                          inputs[field] !== "" &&
+                          !useModel[field];
+
+                        return (
+                          <Grid item xs={12} sm={6} md={4} key={field}>
+                            <Card
+                              sx={{
+                                boxShadow: 2,
+                                borderRadius: 3,
+                                border: providedByUser
+                                  ? "2px solid #81c784"
+                                  : "1px solid #e0e0e0",
+                                transition: "transform 0.15s ease, box-shadow 0.15s ease",
+                                "&:hover": {
+                                  transform: "translateY(-3px)",
+                                  boxShadow: 4,
+                                },
+                              }}
+                            >
+                              <CardContent>
+                                <Typography
+                                  variant="subtitle2"
+                                  color="textSecondary"
+                                >
+                                  {field}
+                                </Typography>
+                                <Typography
+                                  variant="h6"
+                                  sx={{
+                                    fontWeight: "bold",
+                                    color: "#1976d2",
+                                    mt: 0.5,
+                                  }}
+                                >
+                                  {formatNumber(val)}
+                                </Typography>
+
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: "text.secondary" }}
+                                >
+                                  {providedByUser
+                                    ? "Provided by user"
+                                    : "Predicted by model"}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      }
                     )}
                   </Grid>
                 </Paper>
 
+                {/* TABLE */}
+                <Paper
+                  elevation={2}
+                  sx={{ p: isSmall ? 2 : 3, mb: 4, borderRadius: 3 }}
+                >
+                  <Typography variant="h5" sx={{ mb: 2 }}>
+                    Prediction Table
+                  </Typography>
+
+                  <Table sx={{ boxShadow: 1, borderRadius: 2 }}>
+                    <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+                      <TableRow>
+                        <TableCell>
+                          <b>Field</b>
+                        </TableCell>
+                        <TableCell>
+                          <b>Predicted Value</b>
+                        </TableCell>
+                        <TableCell>
+                          <b>Source</b>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {Object.entries(results.predictions || {}).map(
+                        ([field, val]) => {
+                          const providedByUser =
+                            inputs[field] !== undefined &&
+                            inputs[field] !== "" &&
+                            !useModel[field];
+
+                          return (
+                            <TableRow key={field}>
+                              <TableCell>{field}</TableCell>
+                              <TableCell>{formatNumber(val)}</TableCell>
+                              <TableCell>
+                                {providedByUser
+                                  ? "Provided by user"
+                                  : "Predicted by model"}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+                      )}
+                    </TableBody>
+                  </Table>
+                </Paper>
+
+                {/* RELIABILITY */}
                 {effortReport && (
-                  <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
+                  <Paper
+                    elevation={2}
+                    sx={{ p: isSmall ? 2 : 3, borderRadius: 3 }}
+                  >
                     <Typography variant="h5" sx={{ mb: 2 }}>
                       Reliability (Estimated Effort)
                     </Typography>
@@ -622,7 +749,8 @@ function App() {
                       sx={{ height: 12, borderRadius: 5 }}
                     />
                     <Typography sx={{ mt: 1 }}>
-                      Reliability: {((effortReport.r2_mean || 0) * 100).toFixed(1)}%
+                      Reliability:{" "}
+                      {((effortReport.r2_mean || 0) * 100).toFixed(1)}%
                     </Typography>
                   </Paper>
                 )}
@@ -636,6 +764,3 @@ function App() {
 }
 
 export default App;
-
-
-
